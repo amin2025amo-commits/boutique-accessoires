@@ -5,7 +5,7 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig = {
-  apiKey: ""AIzaSyD_jR3u0hwc_H_yPaW1uv4eQGD9Lka_BYE",
+  apiKey: "AIzaSyD_jR3u0hwc_H_yPaW1uv4eQGD9Lka_BYE",
   authDomain: "boutique-accessoires.firebaseapp.com",
   projectId: "boutique-accessoires",
   storageBucket: "boutique-accessoires.firebasestorage.app",
