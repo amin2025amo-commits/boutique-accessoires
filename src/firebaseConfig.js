@@ -5,13 +5,13 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAnCcwhfhd99mGzPT9RiwBGPleRG2o-I4w",
-  authDomain: "ma-boutique-dcc21.firebaseapp.com",
-  projectId: "ma-boutique-dcc21",
-  storageBucket: "ma-boutique-dcc21.firebasestorage.app",
-  messagingSenderId: "590983738496",
-  appId: "1:590983738496:web:fe1ae65fb63f2203086265",
-  measurementId: "G-1PM11TG6ZQ"
+  apiKey: ""AIzaSyD_jR3u0hwc_H_yPaW1uv4eQGD9Lka_BYE",
+  authDomain: "boutique-accessoires.firebaseapp.com",
+  projectId: "boutique-accessoires",
+  storageBucket: "boutique-accessoires.firebasestorage.app",
+  messagingSenderId: "79316843883",
+  appId: "1:79316843883:web:8fdc6c4d2500539f84e02e",
+  measurementId: "G-6L5LLKZLMR"
 };
 
 const app = initializeApp(firebaseConfig);
