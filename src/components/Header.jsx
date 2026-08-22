@@ -1,5 +1,5 @@
 import React from "react";
-import logoToys from "../assets/toy-shop-logo.png"; 
+import logoGift from "../assets/gift-shop-logo.png"; 
 import { translations } from "../translations";
 
 function Header({ 
@@ -38,7 +38,7 @@ function Header({
         style={{ cursor: "pointer", display: "flex", alignItems: "center" }}
       >
         <img 
-          src={logoToys} 
+          src={logoGift} 
           alt="Toy Shop Logo" 
           style={{ 
             height: isMobile ? "50px" : "75px", 
