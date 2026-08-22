@@ -39,7 +39,7 @@ function Header({
       >
         <img 
           src={logoGift} 
-          alt="Toy Shop Logo" 
+          alt="Gift Shop Logo" 
           style={{ 
             height: isMobile ? "50px" : "75px", 
             width: "auto",
