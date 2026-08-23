@@ -16,10 +16,10 @@ function AdminSettings({ facebookUrl, setFacebookUrl, telephone, setTelephone, i
       alert("Veuillez saisir un lien Facebook valide commençant par https://www.facebook.com/");
       return;
     }
-    if (!/^[0-9+().\s-]{8,20}$/.test(numero) || numero.replace(/\D/g, "").length < 8) {
-      alert("Veuillez saisir un numéro de téléphone valide.");
-      return;
-    }
+    //if (!/^[0-9+().\s-]{8,20}$/.test(numero) || numero.replace(/\D/g, "").length < 8) {
+    //  alert("Veuillez saisir un numéro de téléphone valide.");
+    //  return;
+    //}
 
     setEnregistrement(true);
     try {

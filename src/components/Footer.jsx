@@ -1,4 +1,6 @@
 function Footer({ isMobile, facebookUrl, telephone }) {
+  const numeros = telephone.split("/").map((numero) => numero.trim()).filter(Boolean);
+
   return (
     <footer style={{
       backgroundColor: "#ffffff",
@@ -67,20 +69,20 @@ function Footer({ isMobile, facebookUrl, telephone }) {
             <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
               <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
             </svg>
-            Dz-Market
+            Page Facebook
           </a>
 
           {/* 📞 Gestion intelligente du numéro de téléphone */}
-          {isMobile ? (
-            // Version Mobile : Un vrai lien cliquable direct
-            <a 
-              href={`tel:${telephone.replace(/\D/g, "")}`} 
-              style={{ 
+          {numeros.map((numero) => isMobile ? (
+            <a
+              key={numero}
+              href={`tel:${numero.replace(/\D/g, "")}`}
+              style={{
                 display: "flex",
                 alignItems: "center",
                 gap: "6px",
-                color: "#e67e22", 
-                fontWeight: "bold", 
+                color: "#e67e22",
+                fontWeight: "bold",
                 fontSize: "0.85rem",
                 textDecoration: "none",
                 backgroundColor: "#fdf2e9",
@@ -92,17 +94,17 @@ function Footer({ isMobile, facebookUrl, telephone }) {
               onMouseOver={(e) => e.currentTarget.style.transform = "scale(1.03)"}
               onMouseOut={(e) => e.currentTarget.style.transform = "scale(1)"}
             >
-              <span>📞</span> {telephone}
+              <span>📞</span> {numero}
             </a>
           ) : (
-            // Version Ordinateur : Un simple badge texte (évite l'alerte du navigateur)
-            <div 
-              style={{ 
+            <div
+              key={numero}
+              style={{
                 display: "flex",
                 alignItems: "center",
                 gap: "6px",
-                color: "#e67e22", 
-                fontWeight: "bold", 
+                color: "#e67e22",
+                fontWeight: "bold",
                 fontSize: "0.95rem",
                 backgroundColor: "#fdf2e9",
                 padding: "8px 16px",
@@ -112,9 +114,9 @@ function Footer({ isMobile, facebookUrl, telephone }) {
               }}
               title="Sélectionnez ce numéro pour composer l'appel"
             >
-              <span>📞</span> {telephone}
+              <span>📞</span> {numero}
             </div>
-          )}
+          ))}
 
         </div>
       </div>
