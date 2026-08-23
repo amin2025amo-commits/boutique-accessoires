@@ -1,4 +1,4 @@
-function Footer({ isMobile, facebookUrl }) {
+function Footer({ isMobile, facebookUrl, telephone }) {
   return (
     <footer style={{
       backgroundColor: "#ffffff",
@@ -74,7 +74,7 @@ function Footer({ isMobile, facebookUrl }) {
           {isMobile ? (
             // Version Mobile : Un vrai lien cliquable direct
             <a 
-              href="tel:0657927281" 
+              href={`tel:${telephone.replace(/\D/g, "")}`} 
               style={{ 
                 display: "flex",
                 alignItems: "center",
@@ -92,7 +92,7 @@ function Footer({ isMobile, facebookUrl }) {
               onMouseOver={(e) => e.currentTarget.style.transform = "scale(1.03)"}
               onMouseOut={(e) => e.currentTarget.style.transform = "scale(1)"}
             >
-              <span>📞</span> 0657927281
+              <span>📞</span> {telephone}
             </a>
           ) : (
             // Version Ordinateur : Un simple badge texte (évite l'alerte du navigateur)
@@ -112,7 +112,7 @@ function Footer({ isMobile, facebookUrl }) {
               }}
               title="Sélectionnez ce numéro pour composer l'appel"
             >
-              <span>📞</span> 0657927281
+              <span>📞</span> {telephone}
             </div>
           )}
 

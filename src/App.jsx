@@ -30,6 +30,7 @@ function App() {
   });
   const [user, setUser] = useState(null);
   const [facebookUrl, setFacebookUrl] = useState("https://www.facebook.com/profile.php?id=61579345515292");
+  const [telephone, setTelephone] = useState("0657927281");
 
   // --- Modal & Email Login States ---
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -53,8 +54,11 @@ function App() {
     const chargerParametres = async () => {
       try {
         const parametresSnapshot = await getDoc(doc(db, "parametres", "boutique"));
-        const url = parametresSnapshot.data()?.facebookUrl;
+        const parametres = parametresSnapshot.data();
+        const url = parametres?.facebookUrl;
+        const numero = parametres?.telephone;
         if (url) setFacebookUrl(url);
+        if (numero) setTelephone(numero);
       } catch (error) {
         console.error("Erreur chargement paramètres de la boutique :", error);
       }
@@ -516,6 +520,8 @@ function App() {
                 <AdminSettings
                   facebookUrl={facebookUrl}
                   setFacebookUrl={setFacebookUrl}
+                  telephone={telephone}
+                  setTelephone={setTelephone}
                   isMobile={isMobile}
                 />
 
@@ -535,7 +541,7 @@ function App() {
         )}
       </main>
 
-      <Footer isMobile={isMobile} lang={lang} facebookUrl={facebookUrl} />
+      <Footer isMobile={isMobile} lang={lang} facebookUrl={facebookUrl} telephone={telephone} />
     </div>
   );
 }
