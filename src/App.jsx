@@ -5,6 +5,7 @@ import AdminOrders from "./components/AdminOrders";
 import Header from "./components/Header";
 import AdminProductForm from "./components/AdminProductForm";
 import AdminProductList from "./components/AdminProductList";
+import AdminSettings from "./components/AdminSettings";
 import Footer from "./components/Footer"; 
 import { translations } from "./translations";
 import ProduitDetail from "./components/ProduitDetail";
@@ -17,7 +18,7 @@ import {
   signOut, 
   onAuthStateChanged 
 } from "firebase/auth";
-import { collection, addDoc, getDocs, doc, deleteDoc, updateDoc } from "firebase/firestore";
+import { collection, addDoc, getDocs, doc, deleteDoc, updateDoc, getDoc } from "firebase/firestore";
 
 function App() {
   const [lang, setLang] = useState("ar"); // "fr" ou "ar"
@@ -28,6 +29,7 @@ function App() {
     return localStorage.getItem("currentEtape") || "boutique";
   });
   const [user, setUser] = useState(null);
+  const [facebookUrl, setFacebookUrl] = useState("https://www.facebook.com/profile.php?id=61579345515292");
 
   // --- Modal & Email Login States ---
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -45,6 +47,20 @@ function App() {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    const chargerParametres = async () => {
+      try {
+        const parametresSnapshot = await getDoc(doc(db, "parametres", "boutique"));
+        const url = parametresSnapshot.data()?.facebookUrl;
+        if (url) setFacebookUrl(url);
+      } catch (error) {
+        console.error("Erreur chargement paramètres de la boutique :", error);
+      }
+    };
+
+    chargerParametres();
   }, []);
 
   // --- États pour la gestion des produits (Multilingue FR / AR) ---
@@ -497,6 +513,12 @@ function App() {
                   lang={lang}
                 />
 
+                <AdminSettings
+                  facebookUrl={facebookUrl}
+                  setFacebookUrl={setFacebookUrl}
+                  isMobile={isMobile}
+                />
+
                 <hr style={{ border: "0", borderTop: "2px solid #ddd", margin: "30px 0" }} />
 
                 <AdminOrders 
@@ -513,7 +535,7 @@ function App() {
         )}
       </main>
 
-      <Footer isMobile={isMobile} lang={lang} />
+      <Footer isMobile={isMobile} lang={lang} facebookUrl={facebookUrl} />
     </div>
   );
 }

@@ -1,6 +1,4 @@
-import React from "react";
-
-function Footer({ isMobile }) {
+function Footer({ isMobile, facebookUrl }) {
   return (
     <footer style={{
       backgroundColor: "#ffffff",
@@ -40,7 +38,7 @@ function Footer({ isMobile }) {
           
           {/* 🟦 Lien cliquable vers Facebook */}
           <a 
-            href="https://www.facebook.com/profile.php?id=61579345515292" 
+            href={facebookUrl}
             target="_blank" 
             rel="noopener noreferrer"
             style={{
