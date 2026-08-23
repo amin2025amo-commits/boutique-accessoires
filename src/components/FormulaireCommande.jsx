@@ -100,8 +100,7 @@ const FormulaireCommande = ({
         date: serverTimestamp()
       });
 
-      // Notify admin via Telegram (Vercel API)
-      fetch("/api/notify-order", {
+      const notificationResponse = await fetch("/api/notify-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -112,7 +111,12 @@ const FormulaireCommande = ({
             statut: "En attente",
           },
         }),
-      }).catch((err) => console.error("Notification failed:", err));
+      });
+
+      if (!notificationResponse.ok) {
+        const notificationError = await notificationResponse.json().catch(() => ({}));
+        console.error("Notification failed:", notificationError);
+      }
 
       // Show confirmation screen & clear cart
       setEnvoye(true);

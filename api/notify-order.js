@@ -25,23 +25,28 @@ export default async function handler(req, res) {
     return String(name);
   };
 
-  let msg = "🛒 *Nouvelle Commande !*\n\n";
-  msg += `👤 *Client :* ${client.nom || "N/A"}\n`;
-  msg += `📞 *Téléphone :* ${client.telephone || "N/A"}\n`;
-  msg += `📍 *Wilaya :* ${client.wilaya || "N/A"}\n`;
-  msg += `🏘️ *Commune :* ${client.commune || "N/A"}\n`;
-  msg += `📦 *Livraison :* ${client.typeLivraison || "N/A"}\n\n`;
-  msg += `📋 *Articles :*\n`;
+  const escapeHtml = (value) => String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+  let msg = "🛒 <b>Nouvelle Commande !</b>\n\n";
+  msg += `👤 <b>Client :</b> ${escapeHtml(client.nom || "N/A")}\n`;
+  msg += `📞 <b>Téléphone :</b> ${escapeHtml(client.telephone || "N/A")}\n`;
+  msg += `📍 <b>Wilaya :</b> ${escapeHtml(client.wilaya || "N/A")}\n`;
+  msg += `🏘️ <b>Commune :</b> ${escapeHtml(client.commune || "N/A")}\n`;
+  msg += `📦 <b>Livraison :</b> ${escapeHtml(client.typeLivraison || "N/A")}\n\n`;
+  msg += "📋 <b>Articles :</b>\n";
 
   articles.forEach((item, i) => {
     const name = getItemName(item);
     const price = item.price || item.prix || 0;
     const qty = item.quantite || 1;
-    msg += `  ${i + 1}. ${name} — ${price} DA x${qty}\n`;
+    msg += `  ${i + 1}. ${escapeHtml(name)} — ${escapeHtml(price)} DA x${escapeHtml(qty)}\n`;
   });
 
-  msg += `\n💵 *Total :* ${order.total || 0} DA`;
-  msg += `\n📌 *Statut :* ${order.statut || "En attente"}`;
+  msg += `\n💵 <b>Total :</b> ${escapeHtml(order.total || 0)} DA`;
+  msg += `\n📌 <b>Statut :</b> ${escapeHtml(order.statut || "En attente")}`;
 
   try {
     const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
@@ -50,7 +55,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         chat_id: TELEGRAM_CHAT_ID,
         text: msg,
-        parse_mode: "Markdown",
+        parse_mode: "HTML",
       }),
     });
 
