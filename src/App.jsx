@@ -110,7 +110,12 @@ function App() {
   const chargerProduitsAdmin = async () => {
     try {
       const querySnapshot = await getDocs(collection(db, "produits"));
-      const docs = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const docs = querySnapshot.docs
+        .map((productDoc, index) => ({ id: productDoc.id, ...productDoc.data(), ordre: productDoc.data().ordre ?? index }))
+        .sort((a, b) => a.ordre - b.ordre);
+      await Promise.all(docs
+        .filter((product) => querySnapshot.docs.some((productDoc) => productDoc.id === product.id && productDoc.data().ordre === undefined))
+        .map((product) => updateDoc(doc(db, "produits", product.id), { ordre: product.ordre })));
       setListeAdminProduits(docs);
     } catch (error) {
       console.error("Erreur chargement produits admin :", error);
@@ -239,8 +244,10 @@ function App() {
         stock: Number(stockProduit) || 0,
         imagesSecondaires: imagesSecondaires,
         validation: false,
-        date: new Date()
+        date: new Date(),
+        ordre: idProduitEnEdition ? undefined : listeAdminProduits.length
       };
+      if (donneesProduit.ordre === undefined) delete donneesProduit.ordre;
       if (imageString) donneesProduit.image = imageString;
 
       if (idProduitEnEdition) {
@@ -253,7 +260,7 @@ function App() {
         if (!imageString) { alert("Veuillez sélectionner une image."); setAjoutEnCours(false); return; }
         const docRef = await addDoc(collection(db, "produits"), donneesProduit);
         alert("🎉 Nouveau produit en ligne !");
-        setListeAdminProduits([{ id: docRef.id, ...donneesProduit }, ...listeAdminProduits]);
+        setListeAdminProduits([...listeAdminProduits, { id: docRef.id, ...donneesProduit, ordre: listeAdminProduits.length }]);
       }
       annulerEdition();
     } catch (error) {
@@ -312,13 +319,38 @@ function App() {
       const donneesCopie = {
         ...donneesOriginales,
         validation: false,
-        date: new Date()
+        date: new Date(),
+        ordre: listeAdminProduits.length
       };
       const docRef = await addDoc(collection(db, "produits"), donneesCopie);
-      setListeAdminProduits([{ id: docRef.id, ...donneesCopie }, ...listeAdminProduits]);
+      setListeAdminProduits([...listeAdminProduits, { id: docRef.id, ...donneesCopie }]);
       alert("📋 Produit dupliqué !");
     } catch (error) {
       alert("Erreur lors de la duplication : " + error.message);
+    }
+  };
+
+  const handleDeplacerProduit = async (index, direction) => {
+    const nouvelIndex = index + direction;
+    if (nouvelIndex < 0 || nouvelIndex >= listeAdminProduits.length) return;
+
+    const produitActuel = listeAdminProduits[index];
+    const produitVoisin = listeAdminProduits[nouvelIndex];
+    const ordreActuel = produitActuel.ordre ?? index;
+    const ordreVoisin = produitVoisin.ordre ?? nouvelIndex;
+    const nouvelleListe = [...listeAdminProduits];
+    nouvelleListe[index] = { ...produitVoisin, ordre: ordreActuel };
+    nouvelleListe[nouvelIndex] = { ...produitActuel, ordre: ordreVoisin };
+    setListeAdminProduits(nouvelleListe);
+
+    try {
+      await Promise.all([
+        updateDoc(doc(db, "produits", produitActuel.id), { ordre: ordreVoisin }),
+        updateDoc(doc(db, "produits", produitVoisin.id), { ordre: ordreActuel })
+      ]);
+    } catch (error) {
+      setListeAdminProduits(listeAdminProduits);
+      alert("Erreur lors du changement d'ordre : " + error.message);
     }
   };
 
@@ -531,6 +563,7 @@ function App() {
                   adminProduitsOuvert={adminProduitsOuvert} setAdminProduitsOuvert={setAdminProduitsOuvert}
                   listeAdminProduits={listeAdminProduits} handleActiverEdition={handleActiverEdition}
                   handleDupliquerProduit={handleDupliquerProduit}
+                  handleDeplacerProduit={handleDeplacerProduit}
                   handleSupprimerProduit={handleSupprimerProduit}
                   isMobile={isMobile}
                   lang={lang}

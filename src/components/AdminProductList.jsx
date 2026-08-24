@@ -1,6 +1,6 @@
 import React from "react";
 
-function AdminProductList({ adminProduitsOuvert, setAdminProduitsOuvert, listeAdminProduits, handleActiverEdition, handleDupliquerProduit, handleSupprimerProduit, isMobile }) {
+function AdminProductList({ adminProduitsOuvert, setAdminProduitsOuvert, listeAdminProduits, handleActiverEdition, handleDupliquerProduit, handleDeplacerProduit, handleSupprimerProduit, isMobile }) {
   return (
     <div style={{ backgroundColor: "white", padding: isMobile ? "15px" : "25px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.05)", marginBottom: "20px" }}>
       <div 
@@ -18,7 +18,7 @@ function AdminProductList({ adminProduitsOuvert, setAdminProduitsOuvert, listeAd
           {listeAdminProduits.length === 0 ? (
             <p style={{ color: "#7f8c8d", textAlign: "center", margin: "10px 0" }}>Aucun produit en ligne.</p>
           ) : (
-            listeAdminProduits.map((prod) => (
+            listeAdminProduits.map((prod, index) => (
               <div key={prod.id} style={{ 
                 display: "flex", 
                 flexDirection: isMobile ? "column" : "row",
@@ -42,6 +42,8 @@ function AdminProductList({ adminProduitsOuvert, setAdminProduitsOuvert, listeAd
                 </div>
                 
                 <div style={{ display: "flex", gap: "8px", width: isMobile ? "100%" : "auto" }}>
+                  <button onClick={() => handleDeplacerProduit(index, -1)} disabled={index === 0} title="Monter" style={{ backgroundColor: "#95a5a6", color: "white", border: "none", padding: "6px 9px", borderRadius: "6px", cursor: index === 0 ? "not-allowed" : "pointer", opacity: index === 0 ? 0.5 : 1, fontWeight: "600", fontSize: "1rem" }}>↑</button>
+                  <button onClick={() => handleDeplacerProduit(index, 1)} disabled={index === listeAdminProduits.length - 1} title="Descendre" style={{ backgroundColor: "#95a5a6", color: "white", border: "none", padding: "6px 9px", borderRadius: "6px", cursor: index === listeAdminProduits.length - 1 ? "not-allowed" : "pointer", opacity: index === listeAdminProduits.length - 1 ? 0.5 : 1, fontWeight: "600", fontSize: "1rem" }}>↓</button>
                   <button onClick={() => handleActiverEdition(prod)} style={{ backgroundColor: "#3498db", color: "white", border: "none", padding: "6px 10px", borderRadius: "6px", cursor: "pointer", fontWeight: "600", fontSize: "0.8rem", flex: 1 }}>✏️ Modifier</button>
                   <button onClick={() => handleDupliquerProduit(prod)} style={{ backgroundColor: "#27ae60", color: "white", border: "none", padding: "6px 10px", borderRadius: "6px", cursor: "pointer", fontWeight: "600", fontSize: "0.8rem", flex: 1 }}>📋 Dupliquer</button>
                   <button onClick={() => handleSupprimerProduit(prod.id)} style={{ backgroundColor: "#c0392b", color: "white", border: "none", padding: "6px 10px", borderRadius: "6px", cursor: "pointer", fontWeight: "600", fontSize: "0.8rem", flex: 1 }}>🗑️ Supprimer</button>

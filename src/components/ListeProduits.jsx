@@ -18,7 +18,7 @@ const ListeProduits = ({ onAjouter, onCommander, onVoirProduit, lang = "fr" }) =
           id: doc.id,
           ...doc.data()
         }));
-        setProduits(list);
+        setProduits(list.sort((a, b) => (a.ordre ?? 0) - (b.ordre ?? 0)));
       } catch (error) {
         console.error("Erreur chargement produits: ", error);
       } finally {
