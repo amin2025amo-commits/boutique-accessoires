@@ -304,6 +304,24 @@ function App() {
     }
   };
 
+  const handleDupliquerProduit = async (prod) => {
+    if (!window.confirm(`Créer une copie de « ${prod.nom?.fr || prod.name || "ce produit"} » ?`)) return;
+    try {
+      const donneesOriginales = { ...prod };
+      delete donneesOriginales.id;
+      const donneesCopie = {
+        ...donneesOriginales,
+        validation: false,
+        date: new Date()
+      };
+      const docRef = await addDoc(collection(db, "produits"), donneesCopie);
+      setListeAdminProduits([{ id: docRef.id, ...donneesCopie }, ...listeAdminProduits]);
+      alert("📋 Produit dupliqué !");
+    } catch (error) {
+      alert("Erreur lors de la duplication : " + error.message);
+    }
+  };
+
   const totalArticles = panier.reduce((total, item) => total + item.quantite, 0);
   const totalPrix = panier.reduce((sum, item) => sum + item.prix * (item.quantite || 1), 0);
 
@@ -512,6 +530,7 @@ function App() {
                 <AdminProductList 
                   adminProduitsOuvert={adminProduitsOuvert} setAdminProduitsOuvert={setAdminProduitsOuvert}
                   listeAdminProduits={listeAdminProduits} handleActiverEdition={handleActiverEdition}
+                  handleDupliquerProduit={handleDupliquerProduit}
                   handleSupprimerProduit={handleSupprimerProduit}
                   isMobile={isMobile}
                   lang={lang}

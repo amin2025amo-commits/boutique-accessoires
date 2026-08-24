@@ -1,6 +1,6 @@
 import React from "react";
 
-function AdminProductList({ adminProduitsOuvert, setAdminProduitsOuvert, listeAdminProduits, handleActiverEdition, handleSupprimerProduit, isMobile }) {
+function AdminProductList({ adminProduitsOuvert, setAdminProduitsOuvert, listeAdminProduits, handleActiverEdition, handleDupliquerProduit, handleSupprimerProduit, isMobile }) {
   return (
     <div style={{ backgroundColor: "white", padding: isMobile ? "15px" : "25px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.05)", marginBottom: "20px" }}>
       <div 
@@ -43,6 +43,7 @@ function AdminProductList({ adminProduitsOuvert, setAdminProduitsOuvert, listeAd
                 
                 <div style={{ display: "flex", gap: "8px", width: isMobile ? "100%" : "auto" }}>
                   <button onClick={() => handleActiverEdition(prod)} style={{ backgroundColor: "#3498db", color: "white", border: "none", padding: "6px 10px", borderRadius: "6px", cursor: "pointer", fontWeight: "600", fontSize: "0.8rem", flex: 1 }}>✏️ Modifier</button>
+                  <button onClick={() => handleDupliquerProduit(prod)} style={{ backgroundColor: "#27ae60", color: "white", border: "none", padding: "6px 10px", borderRadius: "6px", cursor: "pointer", fontWeight: "600", fontSize: "0.8rem", flex: 1 }}>📋 Dupliquer</button>
                   <button onClick={() => handleSupprimerProduit(prod.id)} style={{ backgroundColor: "#c0392b", color: "white", border: "none", padding: "6px 10px", borderRadius: "6px", cursor: "pointer", fontWeight: "600", fontSize: "0.8rem", flex: 1 }}>🗑️ Supprimer</button>
                 </div>
               </div>
