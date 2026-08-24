@@ -284,6 +284,43 @@ const FormulaireCommande = ({
           ))}
         </select>
 
+        {/* Quantités des articles */}
+        <div style={{
+          border: "1px solid #e9ecef",
+          borderRadius: "8px",
+          padding: "12px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "10px"
+        }}>
+          <h4 style={{ margin: 0, color: "#2c3e50", fontSize: "0.95rem", textAlign: isAr ? "right" : "left" }}>
+            {isAr ? "الكمية المطلوبة لكل منتج" : "Quantité demandée par produit"}
+          </h4>
+          {panier.map((item) => {
+            const nomArticle = typeof item.nom === "object"
+              ? (item.nom[lang] || item.nom.fr || item.nom.ar)
+              : (item.nom || item.name || (isAr ? "منتج" : "Produit"));
+
+            return (
+              <div key={item.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px" }}>
+                <span style={{ color: "#34495e", fontSize: "0.9rem", overflow: "hidden", textOverflow: "ellipsis" }}>{nomArticle}</span>
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  value={item.quantite || 1}
+                  aria-label={isAr ? `كمية ${nomArticle}` : `Quantité de ${nomArticle}`}
+                  onChange={(e) => {
+                    const nouvelleQuantite = Math.max(1, Number(e.target.value) || 1);
+                    modifierQuantite(item.id, nouvelleQuantite - (item.quantite || 1));
+                  }}
+                  style={{ ...inputStyle, width: "80px", padding: "8px", textAlign: "center", direction: "ltr" }}
+                />
+              </div>
+            );
+          })}
+        </div>
+
         {/* Shipping Type Selector (Stopdesk vs Domicile) */}
         <div>
           <label style={{ 
