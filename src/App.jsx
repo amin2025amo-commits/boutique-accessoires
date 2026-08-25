@@ -29,6 +29,7 @@ function App() {
     return localStorage.getItem("currentEtape") || "boutique";
   });
   const [user, setUser] = useState(null);
+  const [nomBoutique, setNomBoutique] = useState("Dz-Market - Accessoires Montres Connectées");
   const [facebookUrl, setFacebookUrl] = useState("https://www.facebook.com/profile.php?id=61579345515292");
   const [telephone, setTelephone] = useState("0657927281");
 
@@ -45,6 +46,10 @@ function App() {
   }, [etape]);
 
   useEffect(() => {
+    document.title = nomBoutique;
+  }, [nomBoutique]);
+
+  useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -55,8 +60,10 @@ function App() {
       try {
         const parametresSnapshot = await getDoc(doc(db, "parametres", "boutique"));
         const parametres = parametresSnapshot.data();
+        const nom = parametres?.nomBoutique;
         const url = parametres?.facebookUrl;
         const numero = parametres?.telephone;
+        if (nom) setNomBoutique(nom);
         if (url) setFacebookUrl(url);
         if (numero) setTelephone(numero);
       } catch (error) {
@@ -570,6 +577,8 @@ function App() {
                 />
 
                 <AdminSettings
+                  nomBoutique={nomBoutique}
+                  setNomBoutique={setNomBoutique}
                   facebookUrl={facebookUrl}
                   setFacebookUrl={setFacebookUrl}
                   telephone={telephone}
