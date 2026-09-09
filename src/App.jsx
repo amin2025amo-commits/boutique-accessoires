@@ -29,7 +29,7 @@ function App() {
     return localStorage.getItem("currentEtape") || "boutique";
   });
   const [user, setUser] = useState(null);
-  const [nomBoutique, setNomBoutique] = useState("Dz-Market - Accessoires Montres Connectées");
+  const [nomBoutique, setNomBoutique] = useState("DZMarket-Gifts");
   const [facebookUrl, setFacebookUrl] = useState("https://www.facebook.com/profile.php?id=61579345515292");
   const [telephone, setTelephone] = useState("0657927281");
 
@@ -59,11 +59,17 @@ function App() {
     const chargerParametres = async () => {
       try {
         const parametresSnapshot = await getDoc(doc(db, "parametres", "boutique"));
-        const parametres = parametresSnapshot.data();
-        const nom = parametres?.nomBoutique;
+        const parametres = parametresSnapshot?.data() || {};
+        const nom = "DZMarket-Gifts";
         const url = parametres?.facebookUrl;
         const numero = parametres?.telephone;
-        if (nom) setNomBoutique(nom);
+
+        setNomBoutique(nom);
+
+        if (parametres?.nomBoutique !== nom) {
+          await updateDoc(doc(db, "parametres", "boutique"), { nomBoutique: nom }, { merge: true });
+        }
+
         if (url) setFacebookUrl(url);
         if (numero) setTelephone(numero);
       } catch (error) {

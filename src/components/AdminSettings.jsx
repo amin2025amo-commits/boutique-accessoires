@@ -52,7 +52,7 @@ function AdminSettings({ nomBoutique, setNomBoutique, facebookUrl, setFacebookUr
             type="text"
             value={nomEnCours}
             onChange={(event) => setNomEnCours(event.target.value)}
-            placeholder="Dz-Market - Accessoires Montres Connectées"
+            placeholder="DZMarket-Gifts"
             required
             style={{ padding: "10px", borderRadius: "6px", border: "1px solid #ccc", fontWeight: "normal" }}
           />

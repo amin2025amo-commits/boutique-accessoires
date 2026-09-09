@@ -123,7 +123,7 @@ function Footer({ isMobile, facebookUrl, telephone }) {
       
       {/* Copyright tout en bas */}
       <p style={{ fontSize: "0.7rem", color: "#7f8c8d", marginTop: "15px", marginBottom: 0 }}>
-        &copy; {new Date().getFullYear()} Dz-Market - Tous droits réservés.
+        &copy; {new Date().getFullYear()} DZMarket-Gifts - Tous droits réservés.
       </p>
     </footer>
   );
