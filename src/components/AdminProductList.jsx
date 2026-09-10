@@ -1,6 +1,6 @@
 import React from "react";
 
-function AdminProductList({ adminProduitsOuvert, setAdminProduitsOuvert, listeAdminProduits, handleActiverEdition, handleDupliquerProduit, handleDeplacerProduit, handleSupprimerProduit, isMobile }) {
+function AdminProductList({ adminProduitsOuvert, setAdminProduitsOuvert, listeAdminProduits, handleActiverEdition, handleDupliquerProduit, handleDeplacerProduit, handleSupprimerProduit, isMobile, lang = "fr" }) {
   return (
     <div style={{ backgroundColor: "white", padding: isMobile ? "15px" : "25px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.05)", marginBottom: "20px" }}>
       <div 
@@ -18,7 +18,12 @@ function AdminProductList({ adminProduitsOuvert, setAdminProduitsOuvert, listeAd
           {listeAdminProduits.length === 0 ? (
             <p style={{ color: "#7f8c8d", textAlign: "center", margin: "10px 0" }}>Aucun produit en ligne.</p>
           ) : (
-            listeAdminProduits.map((prod, index) => (
+            listeAdminProduits.map((prod, index) => {
+              const nomProduit = typeof prod.nom === "object"
+                ? (prod.nom[lang] || prod.nom.fr || prod.nom.ar)
+                : (prod.nom || prod.name || "Produit sans nom");
+
+              return (
               <div key={prod.id} style={{ 
                 display: "flex", 
                 flexDirection: isMobile ? "column" : "row",
@@ -31,9 +36,9 @@ function AdminProductList({ adminProduitsOuvert, setAdminProduitsOuvert, listeAd
                 gap: "10px" 
               }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <img src={prod.image} alt={prod.name} style={{ width: "40px", height: "40px", objectFit: "contain", borderRadius: "4px", border: "1px solid #eee", backgroundColor: "#fff" }} />
+                  <img src={prod.image} alt={nomProduit} style={{ width: "40px", height: "40px", objectFit: "contain", borderRadius: "4px", border: "1px solid #eee", backgroundColor: "#fff" }} />
                   <div>
-                    <strong style={{ color: "#2c3e50", display: "block", fontSize: "0.9rem" }}>{prod.name}</strong>
+                    <strong style={{ color: "#2c3e50", display: "block", fontSize: "0.9rem" }}>{nomProduit}</strong>
                     <div style={{ marginTop: "4px", display: "flex", gap: "8px", flexWrap: "wrap", fontSize: "0.8rem" }}>
                       <span style={{ color: "#e67e22", fontWeight: "bold" }}>{prod.price} DA</span>
                       <span style={{ color: prod.stock > 5 ? "#27ae60" : "#c0392b", fontWeight: "bold" }}>📦 Stock: {prod.stock || 0}</span>
@@ -49,7 +54,8 @@ function AdminProductList({ adminProduitsOuvert, setAdminProduitsOuvert, listeAd
                   <button onClick={() => handleSupprimerProduit(prod.id)} style={{ backgroundColor: "#c0392b", color: "white", border: "none", padding: "6px 10px", borderRadius: "6px", cursor: "pointer", fontWeight: "600", fontSize: "0.8rem", flex: 1 }}>🗑️ Supprimer</button>
                 </div>
               </div>
-            ))
+              );
+            })
           )}
         </div>
       )}
