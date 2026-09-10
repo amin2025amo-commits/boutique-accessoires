@@ -1,5 +1,6 @@
 const SPREADSHEET_ID = "10GEh9Ryhmh7cnpJEh8xuu_PhYEdBHImQMVSd3x81D40";
 const SHEET_NAME = "Commandes";
+const SCRIPT_VERSION = "2026-09-11-create-format-v2";
 
 function doPost(e) {
   try {
@@ -52,7 +53,7 @@ function doPost(e) {
       const rowNumber = rowIndex + 2;
       appliquerFormatCommande(rowNumber, statut);
       return ContentService
-        .createTextOutput(JSON.stringify({ success: true, updated: true }))
+        .createTextOutput(JSON.stringify({ success: true, updated: true, version: SCRIPT_VERSION }))
         .setMimeType(ContentService.MimeType.JSON);
     }
 
@@ -64,7 +65,8 @@ function doPost(e) {
       return `${name} x${item.quantite || 1} (${price} DA)`;
     }).join(" | ");
 
-    sheet.appendRow([
+    const newRow = sheet.getLastRow() + 1;
+    sheet.getRange(newRow, 1, 1, idColumn).setValues([[
       dateCommande,
       client.nom || "",
       telephone,
@@ -77,8 +79,8 @@ function doPost(e) {
       order.total || 0,
       statut,
       order.id || ""
-    ]);
-    const rowNumber = sheet.getLastRow();
+    ]]);
+    const rowNumber = newRow;
     const telephoneCell = sheet.getRange(rowNumber, 3);
     telephoneCell.setNumberFormat("@");
     telephoneCell.setValue(telephone);
@@ -93,7 +95,7 @@ function doPost(e) {
     appliquerFormatCommande(rowNumber, statut);
 
     return ContentService
-      .createTextOutput(JSON.stringify({ success: true }))
+      .createTextOutput(JSON.stringify({ success: true, version: SCRIPT_VERSION }))
       .setMimeType(ContentService.MimeType.JSON);
   } catch (error) {
     return ContentService
