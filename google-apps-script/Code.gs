@@ -33,6 +33,14 @@ function doPost(e) {
     const statut = String(order.statut || "En attente").trim();
     const dateCommande = order.date ? new Date(order.date) : new Date();
 
+    const appliquerFormatCommande = (rowNumber, status) => {
+      const row = sheet.getRange(rowNumber, 1, 1, idColumn);
+      sheet.getRange(rowNumber, 1).setNumberFormat("dd/MM/yyyy HH:mm");
+      sheet.getRange(rowNumber, statusColumn).setValue(status);
+      row.setBackground(statusColors[status] || "#cfe2f3");
+      SpreadsheetApp.flush();
+    };
+
     if (action === "update") {
       const lastRow = sheet.getLastRow();
       const ids = lastRow > 1 ? sheet.getRange(2, idColumn, lastRow - 1, 1).getValues() : [];
@@ -42,10 +50,7 @@ function doPost(e) {
       }
 
       const rowNumber = rowIndex + 2;
-      sheet.getRange(rowNumber, statusColumn).setValue(statut);
-      sheet.getRange(rowNumber, 1).setNumberFormat("dd/MM/yyyy HH:mm");
-      sheet.getRange(rowNumber, 1, 1, idColumn).setBackground(statusColors[statut] || "#ffffff");
-      SpreadsheetApp.flush();
+      appliquerFormatCommande(rowNumber, statut);
       return ContentService
         .createTextOutput(JSON.stringify({ success: true, updated: true }))
         .setMimeType(ContentService.MimeType.JSON);
@@ -85,9 +90,7 @@ function doPost(e) {
           .build()
       );
     }
-    sheet.getRange(rowNumber, 1).setNumberFormat("dd/MM/yyyy HH:mm");
-    sheet.getRange(rowNumber, 1, 1, idColumn).setBackground(statusColors[statut] || "#cfe2f3");
-    SpreadsheetApp.flush();
+    appliquerFormatCommande(rowNumber, statut);
 
     return ContentService
       .createTextOutput(JSON.stringify({ success: true }))
