@@ -40,7 +40,7 @@ function AdminProductList({ adminProduitsOuvert, setAdminProduitsOuvert, listeAd
                   <div>
                     <strong style={{ color: "#2c3e50", display: "block", fontSize: "0.9rem" }}>{nomProduit}</strong>
                     <div style={{ marginTop: "4px", display: "flex", gap: "8px", flexWrap: "wrap", fontSize: "0.8rem" }}>
-                      <span style={{ color: "#e67e22", fontWeight: "bold" }}>{prod.price} DA</span>
+                      <span style={{ color: "#e67e22", fontWeight: "bold" }}>{prod.prix ?? prod.price ?? 0} DA</span>
                       <span style={{ color: prod.stock > 5 ? "#27ae60" : "#c0392b", fontWeight: "bold" }}>📦 Stock: {prod.stock || 0}</span>
                     </div>
                   </div>
