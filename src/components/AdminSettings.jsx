@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 
@@ -7,6 +7,18 @@ function AdminSettings({ nomBoutique, setNomBoutique, facebookUrl, setFacebookUr
   const [urlEnCours, setUrlEnCours] = useState(facebookUrl);
   const [telephoneEnCours, setTelephoneEnCours] = useState(telephone);
   const [enregistrement, setEnregistrement] = useState(false);
+
+  useEffect(() => {
+    setNomEnCours(nomBoutique);
+  }, [nomBoutique]);
+
+  useEffect(() => {
+    setUrlEnCours(facebookUrl);
+  }, [facebookUrl]);
+
+  useEffect(() => {
+    setTelephoneEnCours(telephone || "0657927281");
+  }, [telephone]);
 
   const enregistrerParametres = async (event) => {
     event.preventDefault();
