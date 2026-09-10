@@ -1,4 +1,4 @@
-const SPREADSHEET_ID = "COLLER_ID_DE_LA_FEUILLE_ICI";
+const SPREADSHEET_ID = "10GEh9Ryhmh7cnpJEh8xuu_PhYEdBHImQMVSd3x81D40";
 const SHEET_NAME = "Commandes";
 
 function doPost(e) {
@@ -29,6 +29,9 @@ function doPost(e) {
     const statusColumn = 11;
     const idColumn = 12;
 
+    const telephone = String(client.telephone || "").trim();
+    const dateCommande = order.date ? new Date(order.date) : new Date();
+
     if (action === "update") {
       const lastRow = sheet.getLastRow();
       const ids = lastRow > 1 ? sheet.getRange(2, idColumn, lastRow - 1, 1).getValues() : [];
@@ -54,9 +57,9 @@ function doPost(e) {
     }).join(" | ");
 
     sheet.appendRow([
-      new Date(),
+      dateCommande,
       client.nom || "",
-      client.telephone || "",
+      telephone,
       client.wilaya || "",
       client.commune || client.ville || "",
       client.typeLivraison || "",
@@ -68,6 +71,18 @@ function doPost(e) {
       order.id || ""
     ]);
     const rowNumber = sheet.getLastRow();
+    const telephoneCell = sheet.getRange(rowNumber, 3);
+    telephoneCell.setNumberFormat("@");
+    telephoneCell.setValue(telephone);
+    if (telephone) {
+      telephoneCell.setRichTextValue(
+        SpreadsheetApp.newRichTextValue()
+          .setText(telephone)
+          .setLinkUrl("tel:" + telephone)
+          .build()
+      );
+    }
+    sheet.getRange(rowNumber, 1).setNumberFormat("dd/MM/yyyy HH:mm");
     sheet.getRange(rowNumber, 1, 1, idColumn).setBackground(statusColors[order.statut] || "#cfe2f3");
 
     return ContentService

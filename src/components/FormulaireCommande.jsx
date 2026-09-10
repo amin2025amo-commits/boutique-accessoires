@@ -89,6 +89,7 @@ const FormulaireCommande = ({
           ? (isAr ? "توصيل للمنزل" : "À domicile") 
           : (isAr ? "توصيل لمكتب شركة الشحن" : "Stopdesk (Bureau)")
       };
+          const dateCommande = new Date();
 
       const commandeRef = await addDoc(collection(db, "commandes"), {
         client: clientDataToSend,
@@ -106,6 +107,7 @@ const FormulaireCommande = ({
         body: JSON.stringify({
           order: {
             id: commandeRef.id,
+            date: dateCommande.toISOString(),
             client: clientDataToSend,
             articles: panier,
             sousTotal,
