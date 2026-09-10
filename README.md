@@ -1,5 +1,16 @@
 # React + Vite
 
+## Synchroniser les commandes avec Google Sheets
+
+Les commandes sont d'abord enregistrées dans Firestore. Pour les copier automatiquement dans Google Sheets :
+
+1. Créer une feuille Google Sheets.
+2. Ouvrir **Extensions > Apps Script**, copier le contenu de `google-apps-script/Code.gs` et remplacer `COLLER_ID_DE_LA_FEUILLE_ICI` par l'ID de la feuille.
+3. Déployer le script comme **Application web**, avec l'accès **Tout le monde**.
+4. Ajouter l'URL `/exec` obtenue dans Vercel sous `GOOGLE_SHEETS_WEBHOOK_URL`, puis redéployer.
+
+Le script doit recevoir un POST JSON contenant `{ "order": ... }` et ajouter une ligne dans la feuille. Les colonnes recommandées sont : date, client, téléphone, wilaya, commune, livraison, articles, sous-total, frais de livraison, total et statut.
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:

@@ -10,10 +10,11 @@ export default async function handler(req, res) {
 
   const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
   const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+  const GOOGLE_SHEETS_WEBHOOK_URL = process.env.GOOGLE_SHEETS_WEBHOOK_URL;
 
-  if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
-    console.error("Telegram env vars not set");
-    return res.status(500).json({ error: "Telegram not configured" });
+  if ((!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) && !GOOGLE_SHEETS_WEBHOOK_URL) {
+    console.error("No order notification provider configured");
+    return res.status(500).json({ error: "No order notification provider configured" });
   }
 
   const client = order.client || {};
@@ -49,24 +50,41 @@ export default async function handler(req, res) {
   msg += `\n📌 <b>Statut :</b> ${escapeHtml(order.statut || "En attente")}`;
 
   try {
-    const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: TELEGRAM_CHAT_ID,
-        text: msg,
-        parse_mode: "HTML",
-      }),
-    });
+    const results = {};
 
-    const result = await response.json();
-
-    if (!result.ok) {
-      console.error("Telegram API error:", result);
-      return res.status(500).json({ error: "Telegram API error", details: result });
+    if (GOOGLE_SHEETS_WEBHOOK_URL) {
+      const sheetsResponse = await fetch(GOOGLE_SHEETS_WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ order }),
+      });
+      results.googleSheets = sheetsResponse.ok;
+      if (!sheetsResponse.ok) {
+        console.error("Google Sheets webhook error:", await sheetsResponse.text());
+      }
     }
 
-    return res.status(200).json({ success: true });
+    if (TELEGRAM_BOT_TOKEN && TELEGRAM_CHAT_ID) {
+      const telegramResponse = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: TELEGRAM_CHAT_ID,
+          text: msg,
+          parse_mode: "HTML",
+        }),
+      });
+
+      const telegramResult = await telegramResponse.json();
+      results.telegram = telegramResult.ok;
+      if (!telegramResult.ok) console.error("Telegram API error:", telegramResult);
+    }
+
+    if (!Object.values(results).some(Boolean)) {
+      return res.status(502).json({ error: "Order notifications failed", results });
+    }
+
+    return res.status(200).json({ success: true, results });
   } catch (error) {
     console.error("Failed to send Telegram notification:", error);
     return res.status(500).json({ error: error.message });
