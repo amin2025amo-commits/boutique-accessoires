@@ -324,6 +324,23 @@ function App() {
     }
   };
 
+  const handleModifierPrix = async (id, nouveauPrix) => {
+    const prix = Number(nouveauPrix);
+    if (!Number.isFinite(prix) || prix < 0) {
+      alert("Veuillez saisir un prix valide.");
+      return;
+    }
+
+    try {
+      await updateDoc(doc(db, "produits", id), { prix });
+      setListeAdminProduits((produits) => produits.map((produit) => (
+        produit.id === id ? { ...produit, prix } : produit
+      )));
+    } catch (error) {
+      alert("Erreur lors de la mise à jour du prix : " + error.message);
+    }
+  };
+
   const handleDupliquerProduit = async (prod) => {
     if (!window.confirm(`Créer une copie de « ${prod.nom?.fr || prod.name || "ce produit"} » ?`)) return;
     try {
@@ -575,6 +592,7 @@ function App() {
                 <AdminProductList 
                   adminProduitsOuvert={adminProduitsOuvert} setAdminProduitsOuvert={setAdminProduitsOuvert}
                   listeAdminProduits={listeAdminProduits} handleActiverEdition={handleActiverEdition}
+                  handleModifierPrix={handleModifierPrix}
                   handleDupliquerProduit={handleDupliquerProduit}
                   handleDeplacerProduit={handleDeplacerProduit}
                   handleSupprimerProduit={handleSupprimerProduit}

@@ -1,6 +1,6 @@
 import React from "react";
 
-function AdminProductList({ adminProduitsOuvert, setAdminProduitsOuvert, listeAdminProduits, handleActiverEdition, handleDupliquerProduit, handleDeplacerProduit, handleSupprimerProduit, isMobile, lang = "fr" }) {
+function AdminProductList({ adminProduitsOuvert, setAdminProduitsOuvert, listeAdminProduits, handleActiverEdition, handleModifierPrix, handleDupliquerProduit, handleDeplacerProduit, handleSupprimerProduit, isMobile, lang = "fr" }) {
   return (
     <div style={{ backgroundColor: "white", padding: isMobile ? "15px" : "25px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.05)", marginBottom: "20px" }}>
       <div 
@@ -39,8 +39,26 @@ function AdminProductList({ adminProduitsOuvert, setAdminProduitsOuvert, listeAd
                   <img src={prod.image} alt={nomProduit} style={{ width: "40px", height: "40px", objectFit: "contain", borderRadius: "4px", border: "1px solid #eee", backgroundColor: "#fff" }} />
                   <div>
                     <strong style={{ color: "#2c3e50", display: "block", fontSize: "0.9rem" }}>{nomProduit}</strong>
-                    <div style={{ marginTop: "4px", display: "flex", gap: "8px", flexWrap: "wrap", fontSize: "0.8rem" }}>
-                      <span style={{ color: "#e67e22", fontWeight: "bold" }}>{prod.prix ?? prod.price ?? 0} DA</span>
+                    <div style={{ marginTop: "4px", display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap", fontSize: "0.8rem" }}>
+                      <form
+                        onSubmit={(event) => {
+                          event.preventDefault();
+                          handleModifierPrix(prod.id, event.currentTarget.elements.prix.value);
+                        }}
+                        style={{ display: "flex", alignItems: "center", gap: "4px" }}
+                      >
+                        <input
+                          name="prix"
+                          type="number"
+                          min="0"
+                          step="1"
+                          defaultValue={prod.prix ?? prod.price ?? 0}
+                          aria-label={`Prix de ${nomProduit}`}
+                          style={{ width: "72px", padding: "3px 5px", border: "1px solid #e67e22", borderRadius: "4px", color: "#e67e22", fontWeight: "bold" }}
+                        />
+                        <span style={{ color: "#e67e22", fontWeight: "bold" }}>DA</span>
+                        <button type="submit" title="Enregistrer le prix" style={{ backgroundColor: "#e67e22", color: "white", border: "none", padding: "4px 7px", borderRadius: "4px", cursor: "pointer", fontSize: "0.75rem" }}>✓</button>
+                      </form>
                       <span style={{ color: prod.stock > 5 ? "#27ae60" : "#c0392b", fontWeight: "bold" }}>📦 Stock: {prod.stock || 0}</span>
                     </div>
                   </div>
