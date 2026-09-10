@@ -60,7 +60,11 @@ export default async function handler(req, res) {
       });
       results.googleSheets = sheetsResponse.ok;
       if (!sheetsResponse.ok) {
-        console.error("Google Sheets webhook error:", await sheetsResponse.text());
+        results.googleSheetsError = {
+          status: sheetsResponse.status,
+          body: (await sheetsResponse.text()).slice(0, 500)
+        };
+        console.error("Google Sheets webhook error:", results.googleSheetsError);
       }
     }
 
@@ -77,7 +81,10 @@ export default async function handler(req, res) {
 
       const telegramResult = await telegramResponse.json();
       results.telegram = telegramResult.ok;
-      if (!telegramResult.ok) console.error("Telegram API error:", telegramResult);
+      if (!telegramResult.ok) {
+        results.telegramError = telegramResult.description || "Telegram API error";
+        console.error("Telegram API error:", telegramResult);
+      }
     }
 
     if (!Object.values(results).some(Boolean)) {

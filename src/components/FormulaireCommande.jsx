@@ -107,6 +107,8 @@ const FormulaireCommande = ({
           order: {
             client: clientDataToSend,
             articles: panier,
+            sousTotal,
+            fraisLivraison: fraisPort,
             total: totalGeneral,
             statut: "En attente",
           },
