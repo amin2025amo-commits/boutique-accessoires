@@ -3,8 +3,7 @@ import { db } from '../firebaseConfig';
 import { collection, getDocs, query, orderBy, doc, updateDoc, deleteDoc, getDoc } from 'firebase/firestore';
 import { handleImprimerFiche } from '../utils/imprimerBordereau';
 
-const AdminOrders = ({ listeAdminProduits, setListeAdminProduits, isMobile, lang = "fr" }) => {
-  const isAr = false;
+const AdminOrders = ({ listeAdminProduits, setListeAdminProduits, isMobile }) => {
   const [orders, setOrders] = useState([]);
   const [chargement, setChargement] = useState(true);
   const [filtreStatus, setFiltreStatus] = useState("Tout"); 
@@ -54,7 +53,7 @@ const AdminOrders = ({ listeAdminProduits, setListeAdminProduits, isMobile, lang
       setOrders(orders.map(o => o.id === order.id ? commandeModifiee : o));
       await synchroniserStatutGoogleSheet(commandeModifiee, statut);
     } catch (error) {
-      alert((isAr ? "خطأ في تحديث الحالة: " : "Erreur lors de la mise à jour du statut : ") + error.message);
+      alert("Erreur lors de la mise à jour du statut : " + error.message);
     }
   };
 
@@ -115,10 +114,10 @@ const AdminOrders = ({ listeAdminProduits, setListeAdminProduits, isMobile, lang
         <h3 style={{ color: "#2c3e50", margin: 0, fontSize: isMobile ? "1.1rem" : "1.3rem" }}>📦 Gestion des Commandes</h3>
         <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
           <button onClick={() => setFiltreStatus("Tout")} style={{ backgroundColor: filtreStatus === "Tout" ? "#2c3e50" : "#fff", color: filtreStatus === "Tout" ? "#fff" : "#2c3e50", border: "1px solid #2c3e50", padding: "5px 10px", borderRadius: "20px", cursor: "pointer", fontWeight: "bold", fontSize: "0.75rem" }}>📋 Toutes ({orders.length})</button>
-          <button onClick={() => setFiltreStatus("En attente")} style={{ backgroundColor: filtreStatus === "En attente" ? "#3498db" : "#fff", color: filtreStatus === "En attente" ? "#fff" : "#3498db", border: "1px solid #3498db", padding: "5px 10px", borderRadius: "20px", cursor: "pointer", fontWeight: "bold", fontSize: "0.75rem" }}>⏳ {isAr ? "قيد الانتظار" : "انتظار"} ({orders.filter(o => (!o.statut || o.statut === "En attente")).length})</button>
-          <button onClick={() => setFiltreStatus("Confirmé")} style={{ backgroundColor: filtreStatus === "Confirmé" ? "#f1c40f" : "#fff", color: filtreStatus === "Confirmé" ? "#fff" : "#b7950b", border: "1px solid #f1c40f", padding: "5px 10px", borderRadius: "20px", cursor: "pointer", fontWeight: "bold", fontSize: "0.75rem" }}>✓ {isAr ? "مؤكد" : "Confirmé"} ({orders.filter(o => o.statut === "Confirmé").length})</button>
-          <button onClick={() => setFiltreStatus("Livré")} style={{ backgroundColor: filtreStatus === "Livré" ? "#2ecc71" : "#fff", color: filtreStatus === "Livré" ? "#fff" : "#2ecc71", border: "1px solid #2ecc71", padding: "5px 10px", borderRadius: "20px", cursor: "pointer", fontWeight: "bold", fontSize: "0.75rem" }}>🚚 {isAr ? "تم التوصيل" : "Livré"} ({orders.filter(o => o.statut === "Livré").length})</button>
-          <button onClick={() => setFiltreStatus("Retour")} style={{ backgroundColor: filtreStatus === "Retour" ? "#e74c3c" : "#fff", color: filtreStatus === "Retour" ? "#fff" : "#e74c3c", border: "1px solid #e74c3c", padding: "5px 10px", borderRadius: "20px", cursor: "pointer", fontWeight: "bold", fontSize: "0.75rem" }}>↩ {isAr ? "مرتجع" : "Retour"} ({orders.filter(o => o.statut === "Retour").length})</button>
+          <button onClick={() => setFiltreStatus("En attente")} style={{ backgroundColor: filtreStatus === "En attente" ? "#3498db" : "#fff", color: filtreStatus === "En attente" ? "#fff" : "#3498db", border: "1px solid #3498db", padding: "5px 10px", borderRadius: "20px", cursor: "pointer", fontWeight: "bold", fontSize: "0.75rem" }}>⏳ En attente ({orders.filter(o => (!o.statut || o.statut === "En attente")).length})</button>
+          <button onClick={() => setFiltreStatus("Confirmé")} style={{ backgroundColor: filtreStatus === "Confirmé" ? "#f1c40f" : "#fff", color: filtreStatus === "Confirmé" ? "#fff" : "#b7950b", border: "1px solid #f1c40f", padding: "5px 10px", borderRadius: "20px", cursor: "pointer", fontWeight: "bold", fontSize: "0.75rem" }}>✓ Confirmé ({orders.filter(o => o.statut === "Confirmé").length})</button>
+          <button onClick={() => setFiltreStatus("Livré")} style={{ backgroundColor: filtreStatus === "Livré" ? "#2ecc71" : "#fff", color: filtreStatus === "Livré" ? "#fff" : "#2ecc71", border: "1px solid #2ecc71", padding: "5px 10px", borderRadius: "20px", cursor: "pointer", fontWeight: "bold", fontSize: "0.75rem" }}>🚚 Livré ({orders.filter(o => o.statut === "Livré").length})</button>
+          <button onClick={() => setFiltreStatus("Retour")} style={{ backgroundColor: filtreStatus === "Retour" ? "#e74c3c" : "#fff", color: filtreStatus === "Retour" ? "#fff" : "#e74c3c", border: "1px solid #e74c3c", padding: "5px 10px", borderRadius: "20px", cursor: "pointer", fontWeight: "bold", fontSize: "0.75rem" }}>↩ Retour ({orders.filter(o => o.statut === "Retour").length})</button>
         </div>
       </div>
 
@@ -178,15 +177,15 @@ const AdminOrders = ({ listeAdminProduits, setListeAdminProduits, isMobile, lang
                 <div style={{ display: "flex", gap: "8px", width: isMobile ? "100%" : "auto", justifyContent: "flex-end", flexWrap: "wrap" }}>
                   
                   {(!order.statut || order.statut === "En attente") && (
-                    <button onClick={() => handleConfirmer(order)} style={{ backgroundColor: "#f1c40f", color: "white", border: "none", padding: "8px 12px", borderRadius: "6px", cursor: "pointer", fontWeight: "bold", fontSize: "0.8rem" }}>✓ {isAr ? "تأكيد" : "Confirmer"}</button>
+                    <button onClick={() => handleConfirmer(order)} style={{ backgroundColor: "#f1c40f", color: "white", border: "none", padding: "8px 12px", borderRadius: "6px", cursor: "pointer", fontWeight: "bold", fontSize: "0.8rem" }}>✓ Confirmer</button>
                   )}
 
                   {order.statut === "Confirmé" && (
-                    <button onClick={() => modifierStatut(order, "En attente")} style={{ backgroundColor: "#3498db", color: "white", border: "none", padding: "8px 12px", borderRadius: "6px", cursor: "pointer", fontWeight: "bold", fontSize: "0.8rem" }}>⏳ {isAr ? "إرجاع للانتظار" : "Remettre en attente"}</button>
+                    <button onClick={() => modifierStatut(order, "En attente")} style={{ backgroundColor: "#3498db", color: "white", border: "none", padding: "8px 12px", borderRadius: "6px", cursor: "pointer", fontWeight: "bold", fontSize: "0.8rem" }}>⏳ Remettre en attente</button>
                   )}
 
                   {order.statut !== "Retour" && order.statut !== "Livré" && (
-                    <button onClick={() => modifierStatut(order, "Retour")} style={{ backgroundColor: "#e74c3c", color: "white", border: "none", padding: "8px 12px", borderRadius: "6px", cursor: "pointer", fontWeight: "bold", fontSize: "0.8rem" }}>↩ {isAr ? "مرتجع" : "Retour"}</button>
+                    <button onClick={() => modifierStatut(order, "Retour")} style={{ backgroundColor: "#e74c3c", color: "white", border: "none", padding: "8px 12px", borderRadius: "6px", cursor: "pointer", fontWeight: "bold", fontSize: "0.8rem" }}>↩ Retour</button>
                   )}
                   
                   {(order.statut === "Confirmé" || order.statut === "Livré") && (
