@@ -4,7 +4,7 @@ import { collection, getDocs, query, orderBy, doc, updateDoc, deleteDoc, getDoc 
 import { handleImprimerFiche } from '../utils/imprimerBordereau';
 
 const AdminOrders = ({ listeAdminProduits, setListeAdminProduits, isMobile, lang = "fr" }) => {
-  const isAr = lang === "ar";
+  const isAr = false;
   const [orders, setOrders] = useState([]);
   const [chargement, setChargement] = useState(true);
   const [filtreStatus, setFiltreStatus] = useState("Tout"); 
