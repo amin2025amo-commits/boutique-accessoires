@@ -18,7 +18,7 @@ import {
   signOut, 
   onAuthStateChanged 
 } from "firebase/auth";
-import { collection, addDoc, getDocs, doc, deleteDoc, updateDoc, getDoc } from "firebase/firestore";
+import { collection, addDoc, getDocs, doc, deleteDoc, updateDoc, getDoc, setDoc } from "firebase/firestore";
 
 function App() {
   const [lang, setLang] = useState("ar"); // "fr" ou "ar"
@@ -58,20 +58,23 @@ function App() {
   useEffect(() => {
     const chargerParametres = async () => {
       try {
-        const parametresSnapshot = await getDoc(doc(db, "parametres", "boutique"));
-        const parametres = parametresSnapshot?.data() || {};
-        const nom = "DZMarket-Gifts";
-        const url = parametres?.facebookUrl;
-        const numero = parametres?.telephone;
+        const parametresRef = doc(db, "parametres", "boutique");
+        const parametresSnapshot = await getDoc(parametresRef);
+        const parametres = parametresSnapshot.exists() ? parametresSnapshot.data() : {};
+        const valeursParDefaut = {
+          nomBoutique: "DZMarket-Gifts",
+          facebookUrl: "https://www.facebook.com/profile.php?id=61579345515292",
+          telephone: "0657927281"
+        };
+        const valeurs = { ...valeursParDefaut, ...parametres };
 
-        setNomBoutique(nom);
+        setNomBoutique(valeurs.nomBoutique);
+        setFacebookUrl(valeurs.facebookUrl);
+        setTelephone(valeurs.telephone);
 
-        if (parametres?.nomBoutique !== nom) {
-          await updateDoc(doc(db, "parametres", "boutique"), { nomBoutique: nom }, { merge: true });
+        if (!parametresSnapshot.exists()) {
+          await setDoc(parametresRef, valeursParDefaut);
         }
-
-        if (url) setFacebookUrl(url);
-        if (numero) setTelephone(numero);
       } catch (error) {
         console.error("Erreur chargement paramètres de la boutique :", error);
       }
