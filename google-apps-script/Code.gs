@@ -30,6 +30,7 @@ function doPost(e) {
     const idColumn = 12;
 
     const telephone = String(client.telephone || "").trim();
+    const statut = String(order.statut || "En attente").trim();
     const dateCommande = order.date ? new Date(order.date) : new Date();
 
     if (action === "update") {
@@ -41,8 +42,10 @@ function doPost(e) {
       }
 
       const rowNumber = rowIndex + 2;
-      sheet.getRange(rowNumber, statusColumn).setValue(order.statut || "En attente");
-      sheet.getRange(rowNumber, 1, 1, idColumn).setBackground(statusColors[order.statut] || "#ffffff");
+      sheet.getRange(rowNumber, statusColumn).setValue(statut);
+      sheet.getRange(rowNumber, 1).setNumberFormat("dd/MM/yyyy HH:mm");
+      sheet.getRange(rowNumber, 1, 1, idColumn).setBackground(statusColors[statut] || "#ffffff");
+      SpreadsheetApp.flush();
       return ContentService
         .createTextOutput(JSON.stringify({ success: true, updated: true }))
         .setMimeType(ContentService.MimeType.JSON);
@@ -67,7 +70,7 @@ function doPost(e) {
       order.sousTotal || 0,
       order.fraisLivraison || 0,
       order.total || 0,
-      order.statut || "En attente",
+      statut,
       order.id || ""
     ]);
     const rowNumber = sheet.getLastRow();
@@ -83,7 +86,8 @@ function doPost(e) {
       );
     }
     sheet.getRange(rowNumber, 1).setNumberFormat("dd/MM/yyyy HH:mm");
-    sheet.getRange(rowNumber, 1, 1, idColumn).setBackground(statusColors[order.statut] || "#cfe2f3");
+    sheet.getRange(rowNumber, 1, 1, idColumn).setBackground(statusColors[statut] || "#cfe2f3");
+    SpreadsheetApp.flush();
 
     return ContentService
       .createTextOutput(JSON.stringify({ success: true }))
