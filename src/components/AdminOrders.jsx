@@ -2,18 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { db } from '../firebaseConfig';
 import { collection, getDocs, query, orderBy, doc, updateDoc, deleteDoc, getDoc } from 'firebase/firestore';
 import { handleImprimerFiche } from '../utils/imprimerBordereau';
-// IMPORTATION DU NOUVEAU SERVICE ZR EXPRESS
-import { envoyerVersZRExpress } from '../utils/zrExpressService';
 
-const AdminOrders = ({ listeAdminProduits, setListeAdminProduits, isMobile }) => {
+const AdminOrders = ({ listeAdminProduits, setListeAdminProduits, isMobile, lang = "fr" }) => {
+  const isAr = lang === "ar";
   const [orders, setOrders] = useState([]);
   const [chargement, setChargement] = useState(true);
   const [filtreStatus, setFiltreStatus] = useState("Tout"); 
   const [optionsFragile, setOptionsFragile] = useState({});
   
-  // État pour désactiver les boutons pendant l'envoi API
-  const [enCoursEnvoi, setEnCoursEnvoi] = useState({});
-
   // Safe helper to extract text from multilang objects {fr, ar} or simple strings
   const getLangText = (field, currentLang = "fr") => {
     if (!field) return "";
@@ -42,31 +38,27 @@ const AdminOrders = ({ listeAdminProduits, setListeAdminProduits, isMobile }) =>
     setOptionsFragile(prev => ({ ...prev, [orderId]: !prev[orderId] }));
   };
 
-  // NOUVELLE FONCTION POUR LE BOUTON DÉDIÉ
-  const handlePasserCommandeZR = async (orderId, order) => {
-    setEnCoursEnvoi(prev => ({ ...prev, [orderId]: true }));
-    
-    // On récupère la valeur actuelle de la checkbox pour cette commande
-    const estCocheFragile = !!optionsFragile[orderId];
-    
-    // On passe le booléen en 3ème paramètre à notre service
-    const succes = await envoyerVersZRExpress(orderId, order, estCocheFragile);
-    
-    if (succes) {
-      alert("🚀 Commande synchronisée avec succès sur votre compte ZR Express !");
-    }
-    
-    setEnCoursEnvoi(prev => ({ ...prev, [orderId]: false }));
+  const synchroniserStatutGoogleSheet = async (order, statut) => {
+    const response = await fetch("/api/notify-order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "update", order: { ...order, statut } })
+    });
+    if (!response.ok) throw new Error("La synchronisation Google Sheets a échoué.");
   };
 
-  const handleConfirmer = async (orderId) => {
+  const modifierStatut = async (order, statut) => {
     try {
-      await updateDoc(doc(db, 'commandes', orderId), { statut: "Confirmé" });
-      setOrders(orders.map(o => o.id === orderId ? { ...o, statut: "Confirmé" } : o));
+      await updateDoc(doc(db, 'commandes', order.id), { statut });
+      const commandeModifiee = { ...order, statut };
+      setOrders(orders.map(o => o.id === order.id ? commandeModifiee : o));
+      await synchroniserStatutGoogleSheet(commandeModifiee, statut);
     } catch (error) {
-      alert("Erreur : " + error.message);
+      alert((isAr ? "خطأ في تحديث الحالة: " : "Erreur lors de la mise à jour du statut : ") + error.message);
     }
   };
+
+  const handleConfirmer = (order) => modifierStatut(order, "Confirmé");
 
   const handleLivre = async (order) => {
     const confirmation = window.confirm("Confirmer que cette commande a été livrée ? Le stock des articles sera réduit automatiquement.");
@@ -91,7 +83,9 @@ const AdminOrders = ({ listeAdminProduits, setListeAdminProduits, isMobile }) =>
         }
       }
       await updateDoc(doc(db, 'commandes', order.id), { statut: "Livré" });
-      setOrders(orders.map(o => o.id === order.id ? { ...o, statut: "Livré" } : o));
+      const commandeLivree = { ...order, statut: "Livré" };
+      setOrders(orders.map(o => o.id === order.id ? commandeLivree : o));
+      await synchroniserStatutGoogleSheet(commandeLivree, "Livré");
       alert("🚚 Commande archivée comme 'Livré' et stocks mis à jour !");
     } catch (error) {
       alert("Erreur lors de la mise à jour du stock : " + error.message);
@@ -121,20 +115,21 @@ const AdminOrders = ({ listeAdminProduits, setListeAdminProduits, isMobile }) =>
         <h3 style={{ color: "#2c3e50", margin: 0, fontSize: isMobile ? "1.1rem" : "1.3rem" }}>📦 Gestion des Commandes</h3>
         <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
           <button onClick={() => setFiltreStatus("Tout")} style={{ backgroundColor: filtreStatus === "Tout" ? "#2c3e50" : "#fff", color: filtreStatus === "Tout" ? "#fff" : "#2c3e50", border: "1px solid #2c3e50", padding: "5px 10px", borderRadius: "20px", cursor: "pointer", fontWeight: "bold", fontSize: "0.75rem" }}>📋 Toutes ({orders.length})</button>
-          <button onClick={() => setFiltreStatus("En attente")} style={{ backgroundColor: filtreStatus === "En attente" ? "#f39c12" : "#fff", color: filtreStatus === "En attente" ? "#fff" : "#f39c12", border: "1px solid #f39c12", padding: "5px 10px", borderRadius: "20px", cursor: "pointer", fontWeight: "bold", fontSize: "0.75rem" }}>⏳ Attente ({orders.filter(o => (!o.statut || o.statut === "En attente")).length})</button>
-          <button onClick={() => setFiltreStatus("Confirmé")} style={{ backgroundColor: filtreStatus === "Confirmé" ? "#3498db" : "#fff", color: filtreStatus === "Confirmé" ? "#fff" : "#3498db", border: "1px solid #3498db", padding: "5px 10px", borderRadius: "20px", cursor: "pointer", fontWeight: "bold", fontSize: "0.75rem" }}>✓ Confirmé ({orders.filter(o => o.statut === "Confirmé").length})</button>
-          <button onClick={() => setFiltreStatus("Livré")} style={{ backgroundColor: filtreStatus === "Livré" ? "#2ecc71" : "#fff", color: filtreStatus === "Livré" ? "#fff" : "#2ecc71", border: "1px solid #2ecc71", padding: "5px 10px", borderRadius: "20px", cursor: "pointer", fontWeight: "bold", fontSize: "0.75rem" }}>🚚 Livré ({orders.filter(o => o.statut === "Livré").length})</button>
+          <button onClick={() => setFiltreStatus("En attente")} style={{ backgroundColor: filtreStatus === "En attente" ? "#3498db" : "#fff", color: filtreStatus === "En attente" ? "#fff" : "#3498db", border: "1px solid #3498db", padding: "5px 10px", borderRadius: "20px", cursor: "pointer", fontWeight: "bold", fontSize: "0.75rem" }}>⏳ {isAr ? "قيد الانتظار" : "انتظار"} ({orders.filter(o => (!o.statut || o.statut === "En attente")).length})</button>
+          <button onClick={() => setFiltreStatus("Confirmé")} style={{ backgroundColor: filtreStatus === "Confirmé" ? "#f1c40f" : "#fff", color: filtreStatus === "Confirmé" ? "#fff" : "#b7950b", border: "1px solid #f1c40f", padding: "5px 10px", borderRadius: "20px", cursor: "pointer", fontWeight: "bold", fontSize: "0.75rem" }}>✓ {isAr ? "مؤكد" : "Confirmé"} ({orders.filter(o => o.statut === "Confirmé").length})</button>
+          <button onClick={() => setFiltreStatus("Livré")} style={{ backgroundColor: filtreStatus === "Livré" ? "#2ecc71" : "#fff", color: filtreStatus === "Livré" ? "#fff" : "#2ecc71", border: "1px solid #2ecc71", padding: "5px 10px", borderRadius: "20px", cursor: "pointer", fontWeight: "bold", fontSize: "0.75rem" }}>🚚 {isAr ? "تم التوصيل" : "Livré"} ({orders.filter(o => o.statut === "Livré").length})</button>
+          <button onClick={() => setFiltreStatus("Retour")} style={{ backgroundColor: filtreStatus === "Retour" ? "#e74c3c" : "#fff", color: filtreStatus === "Retour" ? "#fff" : "#e74c3c", border: "1px solid #e74c3c", padding: "5px 10px", borderRadius: "20px", cursor: "pointer", fontWeight: "bold", fontSize: "0.75rem" }}>↩ {isAr ? "مرتجع" : "Retour"} ({orders.filter(o => o.statut === "Retour").length})</button>
         </div>
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
         {commandesFiltrees.map((order) => {
-          let badgeColor = "#f1c40f"; let badgeBg = "#f1c40f20";
-          if (order.statut === "Confirmé") { badgeColor = "#3498db"; badgeBg = "#3498db20"; }
+          let badgeColor = "#3498db"; let badgeBg = "#3498db20";
+          if (order.statut === "Confirmé") { badgeColor = "#f1c40f"; badgeBg = "#f1c40f20"; }
           if (order.statut === "Livré") { badgeColor = "#2ecc71"; badgeBg = "#2ecc7120"; }
+          if (order.statut === "Retour") { badgeColor = "#e74c3c"; badgeBg = "#e74c3c20"; }
 
           const estCocheFragile = !!optionsFragile[order.id];
-          const zrEnCours = !!enCoursEnvoi[order.id];
 
           return (
             <div key={order.id} style={{ backgroundColor: "white", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.05)", borderLeft: `6px solid ${badgeColor}`, padding: isMobile ? "12px" : "20px" }}>
@@ -182,19 +177,16 @@ const AdminOrders = ({ listeAdminProduits, setListeAdminProduits, isMobile }) =>
 
                 <div style={{ display: "flex", gap: "8px", width: isMobile ? "100%" : "auto", justifyContent: "flex-end", flexWrap: "wrap" }}>
                   
-                  {/* BOUTON PASSER LA COMMANDE À ZR EXPRESS */}
-                  {(order.statut === "Confirmé" || order.statut === "Livré") && (
-                    <button 
-                      onClick={() => handlePasserCommandeZR(order.id, order)}
-                      disabled={zrEnCours}
-                      style={{ backgroundColor: "#e67e22", color: "white", border: "none", padding: "8px 12px", borderRadius: "6px", cursor: "pointer", fontWeight: "bold", fontSize: "0.8rem", opacity: zrEnCours ? 0.6 : 1 }}
-                    >
-                      {zrEnCours ? "Synchronisation..." : "🚀 Envoyer à ZR Express"}
-                    </button>
+                  {(!order.statut || order.statut === "En attente") && (
+                    <button onClick={() => handleConfirmer(order)} style={{ backgroundColor: "#f1c40f", color: "white", border: "none", padding: "8px 12px", borderRadius: "6px", cursor: "pointer", fontWeight: "bold", fontSize: "0.8rem" }}>✓ {isAr ? "تأكيد" : "Confirmer"}</button>
                   )}
 
-                  {(!order.statut || order.statut === "En attente") && (
-                    <button onClick={() => handleConfirmer(order.id)} style={{ backgroundColor: "#3498db", color: "white", border: "none", padding: "8px 12px", borderRadius: "6px", cursor: "pointer", fontWeight: "bold", fontSize: "0.8rem" }}>✓ Confirmer</button>
+                  {order.statut === "Confirmé" && (
+                    <button onClick={() => modifierStatut(order, "En attente")} style={{ backgroundColor: "#3498db", color: "white", border: "none", padding: "8px 12px", borderRadius: "6px", cursor: "pointer", fontWeight: "bold", fontSize: "0.8rem" }}>⏳ {isAr ? "إرجاع للانتظار" : "Remettre en attente"}</button>
+                  )}
+
+                  {order.statut !== "Retour" && order.statut !== "Livré" && (
+                    <button onClick={() => modifierStatut(order, "Retour")} style={{ backgroundColor: "#e74c3c", color: "white", border: "none", padding: "8px 12px", borderRadius: "6px", cursor: "pointer", fontWeight: "bold", fontSize: "0.8rem" }}>↩ {isAr ? "مرتجع" : "Retour"}</button>
                   )}
                   
                   {(order.statut === "Confirmé" || order.statut === "Livré") && (

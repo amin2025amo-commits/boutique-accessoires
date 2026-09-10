@@ -9,6 +9,8 @@ Les commandes sont d'abord enregistrées dans Firestore. Pour les copier automat
 3. Déployer le script comme **Application web**, avec l'accès **Tout le monde**.
 4. Ajouter l'URL `/exec` obtenue dans Vercel sous `GOOGLE_SHEETS_WEBHOOK_URL`, puis redéployer.
 
+Après une modification du script Apps Script, créer une nouvelle version du déploiement web. La feuille ajoute la colonne `ID commande` et colore chaque ligne selon le statut : bleu pour `En attente`, jaune pour `Confirmé`, vert pour `Livré` et rouge pour `Retour`.
+
 Le script doit recevoir un POST JSON contenant `{ "order": ... }` et ajouter une ligne dans la feuille. Les colonnes recommandées sont : date, client, téléphone, wilaya, commune, livraison, articles, sous-total, frais de livraison, total et statut.
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

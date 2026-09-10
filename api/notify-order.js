@@ -3,7 +3,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { order } = req.body;
+  const { order, action = "create" } = req.body;
   if (!order) {
     return res.status(400).json({ error: "Missing order data" });
   }
@@ -56,14 +56,24 @@ export default async function handler(req, res) {
       const sheetsResponse = await fetch(GOOGLE_SHEETS_WEBHOOK_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ order }),
+        body: JSON.stringify({ action, order }),
       });
-      results.googleSheets = sheetsResponse.ok;
+      const sheetsBody = await sheetsResponse.text();
+      let sheetsResult = {};
+      try {
+        sheetsResult = JSON.parse(sheetsBody);
+      } catch {
+        sheetsResult = { error: sheetsBody };
+      }
+      results.googleSheets = sheetsResponse.ok && sheetsResult.success !== false;
       if (!sheetsResponse.ok) {
         results.googleSheetsError = {
           status: sheetsResponse.status,
-          body: (await sheetsResponse.text()).slice(0, 500)
+          body: sheetsBody.slice(0, 500)
         };
+        console.error("Google Sheets webhook error:", results.googleSheetsError);
+      } else if (!results.googleSheets) {
+        results.googleSheetsError = sheetsResult.error || "Google Sheets a refusé la commande";
         console.error("Google Sheets webhook error:", results.googleSheetsError);
       }
     }

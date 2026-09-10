@@ -4,6 +4,7 @@ const SHEET_NAME = "Commandes";
 function doPost(e) {
   try {
     const payload = JSON.parse(e.postData.contents || "{}");
+    const action = payload.action || "create";
     const order = payload.order || {};
     const client = order.client || {};
     const articles = order.articles || [];
@@ -13,8 +14,35 @@ function doPost(e) {
     if (sheet.getLastRow() === 0) {
       sheet.appendRow([
         "Date", "Client", "Téléphone", "Wilaya", "Commune", "Livraison",
-        "Articles", "Sous-total", "Frais livraison", "Total", "Statut"
+        "Articles", "Sous-total", "Frais livraison", "Total", "Statut", "ID commande"
       ]);
+    } else if (sheet.getRange(1, 12).getValue() !== "ID commande") {
+      sheet.getRange(1, 12).setValue("ID commande");
+    }
+
+    const statusColors = {
+      "Livré": "#b7e1cd",
+      "Confirmé": "#fff2cc",
+      "En attente": "#cfe2f3",
+      "Retour": "#f4cccc"
+    };
+    const statusColumn = 11;
+    const idColumn = 12;
+
+    if (action === "update") {
+      const lastRow = sheet.getLastRow();
+      const ids = lastRow > 1 ? sheet.getRange(2, idColumn, lastRow - 1, 1).getValues() : [];
+      const rowIndex = ids.findIndex((row) => String(row[0]) === String(order.id));
+      if (rowIndex === -1) {
+        throw new Error("Commande introuvable dans Google Sheets : " + order.id);
+      }
+
+      const rowNumber = rowIndex + 2;
+      sheet.getRange(rowNumber, statusColumn).setValue(order.statut || "En attente");
+      sheet.getRange(rowNumber, 1, 1, idColumn).setBackground(statusColors[order.statut] || "#ffffff");
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, updated: true }))
+        .setMimeType(ContentService.MimeType.JSON);
     }
 
     const articlesText = articles.map((item) => {
@@ -36,8 +64,11 @@ function doPost(e) {
       order.sousTotal || 0,
       order.fraisLivraison || 0,
       order.total || 0,
-      order.statut || "En attente"
+      order.statut || "En attente",
+      order.id || ""
     ]);
+    const rowNumber = sheet.getLastRow();
+    sheet.getRange(rowNumber, 1, 1, idColumn).setBackground(statusColors[order.statut] || "#cfe2f3");
 
     return ContentService
       .createTextOutput(JSON.stringify({ success: true }))

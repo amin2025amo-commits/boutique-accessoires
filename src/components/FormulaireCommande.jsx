@@ -90,7 +90,7 @@ const FormulaireCommande = ({
           : (isAr ? "توصيل لمكتب شركة الشحن" : "Stopdesk (Bureau)")
       };
 
-      await addDoc(collection(db, "commandes"), {
+      const commandeRef = await addDoc(collection(db, "commandes"), {
         client: clientDataToSend,
         articles: panier,
         sousTotal: sousTotal,
@@ -105,6 +105,7 @@ const FormulaireCommande = ({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           order: {
+            id: commandeRef.id,
             client: clientDataToSend,
             articles: panier,
             sousTotal,

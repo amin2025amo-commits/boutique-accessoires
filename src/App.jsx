@@ -611,6 +611,7 @@ function App() {
                   telephone={telephone}
                   setTelephone={setTelephone}
                   isMobile={isMobile}
+                  lang={lang}
                 />
 
                 <hr style={{ border: "0", borderTop: "2px solid #ddd", margin: "30px 0" }} />
