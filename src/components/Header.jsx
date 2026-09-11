@@ -4,6 +4,7 @@ import { translations } from "../translations";
 
 function Header({ 
   user, 
+  isAdmin = false,
   etape, 
   setEtape, 
   handleLogin, 
@@ -14,12 +15,6 @@ function Header({
   setLang 
 }) {
   const t = translations[lang] || translations.fr;
-  const adminEmails = (import.meta.env.VITE_ADMIN_EMAIL || "")
-    .split(",")
-    .map((email) => email.trim().toLowerCase())
-    .filter(Boolean);
-  const isAdmin = user && adminEmails.includes(user.email?.toLowerCase());
-
   return (
     <header style={{
       backgroundColor: "#ffffff", 

@@ -34,6 +34,7 @@ function App() {
     return localStorage.getItem("currentEtape") || "boutique";
   });
   const [user, setUser] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [nomBoutique, setNomBoutique] = useState("DZMarket-Gifts");
   const [facebookUrl, setFacebookUrl] = useState("https://www.facebook.com/profile.php?id=61579345515292");
   const [telephone, setTelephone] = useState("0657927281");
@@ -45,10 +46,6 @@ function App() {
 
   // --- Outil de Détection Mobile ---
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const adminEmails = (import.meta.env.VITE_ADMIN_EMAIL || "")
-    .split(",")
-    .map((email) => email.trim().toLowerCase())
-    .filter(Boolean);
 
   useEffect(() => {
     localStorage.setItem("currentEtape", etape);
@@ -190,10 +187,15 @@ function App() {
   };
 
   const verifierAccesAdmin = async (emailConnecte) => {
-    const rawAdminEmails = import.meta.env.VITE_ADMIN_EMAIL || "";
-    const ADMIN_EMAILS = rawAdminEmails.split(",").map(email => email.trim().toLowerCase());
+    const response = await fetch("/api/check-admin", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: emailConnecte })
+    });
+    const { isAdmin: emailAutorise } = await response.json();
 
-    if (ADMIN_EMAILS.includes(emailConnecte.toLowerCase())) {
+    if (emailAutorise) {
+      setIsAdmin(true);
       setEtape("admin"); 
       setShowLoginModal(false);
       setLoginEmail("");
@@ -202,6 +204,7 @@ function App() {
     } else {
       await signOut(auth);
       setUser(null);
+      setIsAdmin(false);
       setEtape("boutique");
       alert(lang === "ar" ? "⛔ تم رفض الوصول: أنت لست صاحب هذا المتجر." : "⛔ Accès interdit : Vous n'êtes pas le propriétaire de cette boutique.");
     }
@@ -444,6 +447,7 @@ function App() {
       {/* HEADER */}
       <Header 
         user={user} etape={etape} setEtape={setEtape} 
+        isAdmin={isAdmin}
         handleLogin={() => setShowLoginModal(true)} 
         handleLogout={handleLogout} 
         totalArticles={totalArticles} chargerProduitsAdmin={chargerProduitsAdmin}
