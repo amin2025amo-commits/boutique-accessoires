@@ -23,7 +23,10 @@ import {
 import { collection, addDoc, getDocs, doc, deleteDoc, updateDoc, getDoc, setDoc } from "firebase/firestore";
 
 function App() {
-  const [lang, setLang] = useState("ar"); // "fr" ou "ar"
+  const [lang, setLang] = useState(() => {
+    const langueSauvegardee = localStorage.getItem("langueBoutique");
+    return langueSauvegardee === "fr" || langueSauvegardee === "ar" ? langueSauvegardee : "ar";
+  }); // "fr" ou "ar"
   const t = translations[lang];
 
   const [panier, setPanier] = useState([]);
@@ -50,6 +53,10 @@ function App() {
   useEffect(() => {
     localStorage.setItem("currentEtape", etape);
   }, [etape]);
+
+  useEffect(() => {
+    localStorage.setItem("langueBoutique", lang);
+  }, [lang]);
 
   useEffect(() => {
     document.title = nomBoutique;
@@ -224,7 +231,14 @@ function App() {
       const userCredential = await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
       await verifierAccesAdmin(userCredential.user.email);
     } catch (error) {
-      alert("Erreur de connexion : " + error.message);
+      const messages = {
+        "auth/invalid-credential": "Email ou mot de passe incorrect.",
+        "auth/user-not-found": "Aucun compte Email/Password ne correspond à cet email.",
+        "auth/wrong-password": "Mot de passe incorrect.",
+        "auth/invalid-email": "Adresse email invalide.",
+        "auth/too-many-requests": "Trop de tentatives. Réessayez plus tard."
+      };
+      alert("Erreur de connexion : " + (messages[error.code] || error.message));
     }
   };
 
