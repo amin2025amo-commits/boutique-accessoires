@@ -1,6 +1,6 @@
 const SPREADSHEET_ID = "10GEh9Ryhmh7cnpJEh8xuu_PhYEdBHImQMVSd3x81D40";
 const SHEET_NAME = "Commandes";
-const SCRIPT_VERSION = "2026-09-11-create-format-v2";
+const SCRIPT_VERSION = "2026-09-11-format-all-rows-v4";
 
 function doPost(e) {
   try {
@@ -34,11 +34,20 @@ function doPost(e) {
     const statut = String(order.statut || "En attente").trim();
     const dateCommande = order.date ? new Date(order.date) : new Date();
 
-    const appliquerFormatCommande = (rowNumber, status) => {
-      const row = sheet.getRange(rowNumber, 1, 1, idColumn);
-      sheet.getRange(rowNumber, 1).setNumberFormat("dd/MM/yyyy HH:mm");
-      sheet.getRange(rowNumber, statusColumn).setValue(status);
-      row.setBackground(statusColors[status] || "#cfe2f3");
+    const appliquerFormatCommandes = () => {
+      const lastRow = sheet.getLastRow();
+      if (lastRow < 2) return;
+
+      const commandesRange = sheet.getRange(2, 1, lastRow - 1, idColumn);
+      const statuts = sheet.getRange(2, statusColumn, lastRow - 1, 1).getValues();
+      const couleurs = statuts.map(([status]) => [
+        statusColors[String(status).trim()] || "#cfe2f3"
+      ]);
+
+      sheet.getRange(2, 1, lastRow - 1, 1).setNumberFormat("dd/mm/yyyy hh:mm");
+      commandesRange.setBackgrounds(
+        couleurs.map(([color]) => Array(idColumn).fill(color))
+      );
       SpreadsheetApp.flush();
     };
 
@@ -51,7 +60,8 @@ function doPost(e) {
       }
 
       const rowNumber = rowIndex + 2;
-      appliquerFormatCommande(rowNumber, statut);
+      sheet.getRange(rowNumber, statusColumn).setValue(statut);
+      appliquerFormatCommandes();
       return ContentService
         .createTextOutput(JSON.stringify({ success: true, updated: true, version: SCRIPT_VERSION }))
         .setMimeType(ContentService.MimeType.JSON);
@@ -92,7 +102,7 @@ function doPost(e) {
           .build()
       );
     }
-    appliquerFormatCommande(rowNumber, statut);
+    appliquerFormatCommandes();
 
     return ContentService
       .createTextOutput(JSON.stringify({ success: true, version: SCRIPT_VERSION }))
