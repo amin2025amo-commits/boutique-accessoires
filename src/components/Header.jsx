@@ -14,6 +14,11 @@ function Header({
   setLang 
 }) {
   const t = translations[lang] || translations.fr;
+  const adminEmails = (import.meta.env.VITE_ADMIN_EMAIL || "")
+    .split(",")
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean);
+  const isAdmin = user && adminEmails.includes(user.email?.toLowerCase());
 
   return (
     <header style={{
@@ -77,7 +82,7 @@ function Header({
         )}
 
         {/* Badge Admin */}
-        {user && user.email === "anguekoussama.emp@gmail.com" && (
+        {isAdmin && (
           <button
             onClick={() => setEtape(etape === "admin" ? "boutique" : "admin")}
             style={{

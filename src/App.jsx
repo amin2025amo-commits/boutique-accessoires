@@ -14,6 +14,8 @@ import PanierPage from "./components/PanierPage"; // 👈 1. Import your new Pan
 import { db, auth, provider } from "./firebaseConfig";
 import { 
   signInWithPopup, 
+  signInWithRedirect,
+  getRedirectResult,
   signInWithEmailAndPassword, 
   signOut, 
   onAuthStateChanged 
@@ -40,6 +42,10 @@ function App() {
 
   // --- Outil de Détection Mobile ---
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const adminEmails = (import.meta.env.VITE_ADMIN_EMAIL || "")
+    .split(",")
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean);
 
   useEffect(() => {
     localStorage.setItem("currentEtape", etape);
@@ -123,6 +129,17 @@ function App() {
     return () => unsubscribe();
   }, []);
 
+  useEffect(() => {
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result?.user) return verifierAccesAdmin(result.user.email);
+      })
+      .catch((error) => {
+        console.error("Erreur de connexion Google après redirection :", error);
+        alert("Erreur de connexion Google : " + error.message);
+      });
+  }, []);
+
   const chargerProduitsAdmin = async () => {
     try {
       const querySnapshot = await getDocs(collection(db, "produits"));
@@ -185,9 +202,18 @@ function App() {
 
   const handleGoogleLogin = async () => {
     try {
+      if (isMobile) {
+        await signInWithRedirect(auth, provider);
+        return;
+      }
+
       const result = await signInWithPopup(auth, provider);
       await verifierAccesAdmin(result.user.email);
     } catch (error) {
+      if (error.code === "auth/popup-blocked" || error.code === "auth/operation-not-supported-in-this-environment") {
+        await signInWithRedirect(auth, provider);
+        return;
+      }
       alert("Erreur de connexion Google : " + error.message);
     }
   };
